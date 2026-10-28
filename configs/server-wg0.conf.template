@@ -1,0 +1,51 @@
+# ============================================================================
+# WireGuard SERVER config TEMPLATE  (wg0.conf)
+# ============================================================================
+# Copy to /etc/wireguard/wg0.conf on the Linux server, replace every
+# <PLACEHOLDER>, then:  sudo chmod 600 /etc/wireguard/wg0.conf
+#
+# *** NEVER commit a real config (with real keys) to git. ***
+# *** This template contains PLACEHOLDERS ONLY on purpose.  ***
+# ============================================================================
+
+[Interface]
+# Tunnel IP of the server. The tunnel subnet is 10.8.0.0/24, kept separate
+# from the home LAN on purpose.
+Address = 10.8.0.1/24
+
+# WireGuard listens on UDP 51820. This is the ONLY port you forward on the
+# home router (51820/UDP -> this server's LAN IP).
+ListenPort = 51820
+
+# The server's PRIVATE key: contents of /etc/wireguard/server_private.key
+# (generate with: wg genkey). Never share this value with anyone.
+PrivateKey = <SERVER_PRIVATE_KEY>
+
+# --- NAT / forwarding (iptables path used by BUILD-GUIDE.md) -------------
+# wg-quick replaces %i with the interface name (wg0).
+# Replace "eth0" with the server's LAN interface if different
+# (check with: ip route | grep default).
+# PostUp adds: forward tunnel traffic, and masquerade it out the LAN side.
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+# PostDown removes exactly those rules when the tunnel stops.
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+# ============================================================================
+# PEERS — one [Peer] block per client device. Never share one peer between
+# two devices; add a new block (and a new tunnel IP) for each device.
+# ============================================================================
+
+[Peer]
+# client1 — e.g. "Shiv's phone"
+# The client's PUBLIC key (from client1_public.key / the peer generator).
+PublicKey = <CLIENT1_PUBLIC_KEY>
+
+# This peer may send traffic from this one tunnel address only.
+# Next device would be 10.8.0.3/32, then .4/32, and so on.
+AllowedIPs = 10.8.0.2/32
+
+# --- Example of a second peer (uncomment and fill in when needed) --------
+# [Peer]
+# # client2 — e.g. "laptop"
+# PublicKey = <CLIENT2_PUBLIC_KEY>
+# AllowedIPs = 10.8.0.3/32

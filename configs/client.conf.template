@@ -1,0 +1,45 @@
+# ============================================================================
+# WireGuard CLIENT config TEMPLATE  (e.g. homelab.conf)
+# ============================================================================
+# Import this file into the WireGuard app (Windows: "Import tunnel(s) from
+# file"; phone: create from QR code of this file's contents).
+#
+# *** This file will contain a PRIVATE key once filled in. Treat the filled
+#     file like a password: never email it, post it, or commit it to git. ***
+# *** This template contains PLACEHOLDERS ONLY on purpose. ***
+# ============================================================================
+
+[Interface]
+# The client's PRIVATE key (pairs with the public key registered on the
+# server for this device). Each device has its OWN key pair.
+PrivateKey = <CLIENT_PRIVATE_KEY>
+
+# This client's tunnel IP — must match the AllowedIPs of its [Peer] block
+# on the server (10.8.0.2/32 for the first client).
+Address = 10.8.0.2/32
+
+# Optional: DNS to use while the tunnel is up. Uncomment to resolve names
+# through a home-LAN DNS server (router or Pi-hole) over the tunnel.
+# DNS = 192.168.1.1
+
+[Peer]
+# The server's PUBLIC key (contents of server_public.key on the server).
+PublicKey = <SERVER_PUBLIC_KEY>
+
+# Where to find the server: your home public IP or, better, a dynamic DNS
+# hostname (home IPs change!). Port is the forwarded UDP port 51820.
+Endpoint = <HOME_PUBLIC_IP_OR_DDNS_HOSTNAME>:51820
+
+# SPLIT TUNNEL (default here): only traffic for the lab tunnel subnet goes
+# through the VPN. The client's other internet traffic stays direct/fast.
+AllowedIPs = 10.8.0.0/24
+#
+# FULL TUNNEL (optional): route EVERYTHING through home — more secure on
+# public Wi-Fi, but all traffic is limited by your home upload speed.
+# To use it instead, replace the line above with:
+# AllowedIPs = 0.0.0.0/0
+
+# Sends a tiny keepalive packet every 25 seconds so NAT mappings on the
+# client's network don't time out and silently kill an idle tunnel.
+# Essential for phones and clients behind home routers.
+PersistentKeepalive = 25
